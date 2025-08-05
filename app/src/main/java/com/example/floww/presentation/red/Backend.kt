@@ -15,7 +15,7 @@ class Backend(private val context: Context) {
 
     suspend fun uploadAndSave(file: File, filesDir: File, onResult: (String) -> Unit) {
         try {
-            val response = URL("http:/192.168.0.16:5000/whisper-transcribe").openConnection().run {
+            val response = URL("http:/192.168.137.218:5000/whisper-transcribe").openConnection().run {
                 this as HttpURLConnection
                 requestMethod = "POST"
                 doOutput = true

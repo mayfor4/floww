@@ -2,7 +2,7 @@ package com.example.floww.presentation
 
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.awaitHorizontalDragOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -32,13 +32,18 @@ fun TranscriptionScreen(
     var showTextScreen by remember { mutableStateOf(false) }
     var isPaused by remember { mutableStateOf(false) }
 
-    // Detectar swipe
     val gestureModifier = Modifier.pointerInput(Unit) {
-        detectHorizontalDragGestures { _, dragAmount ->
-            if (dragAmount < -30) {
-                showTextScreen = true
-            } else if (dragAmount > 30) {
-                showTextScreen = false
+        awaitPointerEventScope {
+            while (true) {
+                val down = awaitPointerEvent().changes.firstOrNull() ?: continue
+                val drag = awaitHorizontalDragOrCancellation(down.id)
+
+                if (drag != null) {
+                    val dragAmount = drag.position.x - down.position.x
+                    if (dragAmount < -30) {
+                        showTextScreen = !showTextScreen
+                    }
+                }
             }
         }
     }
