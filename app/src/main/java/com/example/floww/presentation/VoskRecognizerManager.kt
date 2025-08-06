@@ -77,10 +77,10 @@ class VoskRecognizerManager(
             val subFiles = assetManager.list(fullPath)
 
             if (subFiles?.isNotEmpty() == true) {
-                // Carpeta anidada → recursión
+
                 copyAssetFolderToInternalStorage(context, fullPath)
             } else {
-                // Archivo → copiar
+
                 val inputStream = assetManager.open(fullPath)
                 val outFile = File(context.filesDir, fullPath)
                 outFile.parentFile?.mkdirs()

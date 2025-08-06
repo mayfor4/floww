@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
         requestAudioPermission()
         translatorHelper.prepareTranslator()
 
-        // ✅ moved here so it's shared with Vosk callback
+
         val translatedText = mutableStateOf("")
         val showTextScreen = mutableStateOf(false)
         setContent {
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // ✅ Vosk Integration
+        //  Vosk Integration
         voskRecognizer = VoskRecognizerManager(
             onCommandDetected = { command ->
                 runOnUiThread {
@@ -168,6 +168,6 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         audioRecorder.stop()
-        voskRecognizer.stop() // ✅ importante para liberar recursos
+        voskRecognizer.stop()
     }
 }
