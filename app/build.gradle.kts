@@ -58,5 +58,6 @@ dependencies {
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended:<versión>")
+    implementation (libs.vosk.android)
 
 }

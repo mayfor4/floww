@@ -23,15 +23,21 @@ import com.example.floww.presentation.red.Backend
 import com.example.floww.presentation.theme.AppTheme
 import com.example.floww.presentation.translation.Translator
 import kotlinx.coroutines.*
-
 class MainActivity : ComponentActivity() {
 
     private lateinit var audioRecorder: AudioRecorder
     private lateinit var translatorHelper: Translator
     private lateinit var backendUploader: Backend
+    private lateinit var voskRecognizer: VoskRecognizerManager
 
     private var isRecording = false
     private var isPaused = false
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) showToast("Permiso de micrófono denegado")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,10 +49,10 @@ class MainActivity : ComponentActivity() {
         requestAudioPermission()
         translatorHelper.prepareTranslator()
 
+        // ✅ moved here so it's shared with Vosk callback
+        val translatedText = mutableStateOf("")
+        val showTextScreen = mutableStateOf(false)
         setContent {
-
-            val translatedText = remember { mutableStateOf("") }
-
             AppTheme {
                 TranscriptionScreen(
                     onStartTranscription = {
@@ -57,16 +63,51 @@ class MainActivity : ComponentActivity() {
                         } else {
                             showToast("Permiso de micrófono no otorgado.")
                         }
-
                     },
                     onTranslate = {
                         translateLastTranscription(translatedText)
                     },
                     onPauseTranscription = ::togglePauseRecording,
                     onStopTranscription = ::stopRecording,
-                    transcribedText = translatedText.value
+                    transcribedText = translatedText.value,
+                    showTextScreen = showTextScreen,
                 )
             }
+        }
+
+        // ✅ Vosk Integration
+        voskRecognizer = VoskRecognizerManager(
+            onCommandDetected = { command ->
+                runOnUiThread {
+                    when (command) {
+                        "iniciar" -> {
+                            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                                == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                startRecording(translatedText)
+                            } else {
+                                showToast("Permiso de micrófono no otorgado.")
+                            }
+                        }
+                        "pausar" -> togglePauseRecording()
+                        "detener" -> stopRecording()
+                        "traducir" -> translateLastTranscription(translatedText)
+                        "deslizar" -> {
+                            showTextScreen.value = true
+                        }
+                        "volver", "controles" -> {
+                            showTextScreen.value = false
+                        }
+                    }
+                }
+            },
+            onError = { errorMsg ->
+                runOnUiThread {
+                    showToast(errorMsg)
+                }
+            }
+        ).also {
+            it.initialize(this)
         }
     }
 
@@ -78,13 +119,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun startRecording(translatedText: MutableState<String>) {
+    private fun startRecording(translatedText: androidx.compose.runtime.MutableState<String>) {
         if (isRecording) return
 
         isRecording = true
         isPaused = false
+        showToast("Grabación iniciada")
 
         audioRecorder.start { pcmFile ->
             val wavFile = AudioConverter.convertPcmToWav(pcmFile, AudioConfig(), cacheDir)
@@ -92,14 +133,6 @@ class MainActivity : ComponentActivity() {
                 backendUploader.uploadAndSave(wavFile, filesDir) { result ->
                     translatedText.value = result
                 }
-            }
-        }
-    }
-
-    private fun translateLastTranscription(translatedText: MutableState<String>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            translatorHelper.translateLastTranscription(filesDir) {
-                translatedText.value = it
             }
         }
     }
@@ -118,18 +151,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun translateLastTranscription(translatedText: androidx.compose.runtime.MutableState<String>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            translatorHelper.translateLastTranscription(filesDir) {
+                translatedText.value = it
+            }
+        }
+    }
+
     private fun showToast(msg: String) {
-        runOnUiThread { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() }
+        runOnUiThread {
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         audioRecorder.stop()
-    }
-
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (!granted) showToast("Permiso de micrófono denegado")
+        voskRecognizer.stop() // ✅ importante para liberar recursos
     }
 }

@@ -27,9 +27,10 @@ fun TranscriptionScreen(
     onPauseTranscription: () -> Unit,
     onStopTranscription: () -> Unit,
     onTranslate: () -> Unit,
-    transcribedText: String
+    transcribedText: String,
+    showTextScreen: MutableState<Boolean>
 ) {
-    var showTextScreen by remember { mutableStateOf(false) }
+
     var isPaused by remember { mutableStateOf(false) }
 
     val gestureModifier = Modifier.pointerInput(Unit) {
@@ -40,13 +41,16 @@ fun TranscriptionScreen(
 
                 if (drag != null) {
                     val dragAmount = drag.position.x - down.position.x
+
                     if (dragAmount < -30) {
-                        showTextScreen = !showTextScreen
+                        showTextScreen.value = !showTextScreen.value
                     }
                 }
             }
         }
     }
+
+
 
     Box(
         modifier = Modifier
@@ -55,7 +59,7 @@ fun TranscriptionScreen(
             .background(Color.White)
             .padding(12.dp)
     ) {
-        if (showTextScreen) {
+        if (showTextScreen.value) {
             // Pantalla de texto transcrito
             Column(
                 modifier = Modifier
