@@ -14,7 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+
 import androidx.core.content.ContextCompat
 import com.example.floww.presentation.audio.AudioConfig
 import com.example.floww.presentation.audio.AudioConverter
@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun startRecording(translatedText: androidx.compose.runtime.MutableState<String>) {
+    private fun startRecording(translatedText: MutableState<String>) {
         if (isRecording) return
 
         isRecording = true
@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun translateLastTranscription(translatedText: androidx.compose.runtime.MutableState<String>) {
+    private fun translateLastTranscription(translatedText: MutableState<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             translatorHelper.translateLastTranscription(filesDir) {
                 translatedText.value = it
