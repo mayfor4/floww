@@ -1,4 +1,4 @@
-package com.example.floww.presentation
+package com.example.floww.presentation.audio
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
@@ -39,8 +39,10 @@ class VoskRecognizerManager(
         override fun onPartialResult(hypothesis: String?) {}
 
         override fun onResult(hypothesis: String?) {
-            val command = JSONObject(hypothesis ?: "{}").optString("text", "").lowercase()
-            if (command in listOf("iniciar", "pausar", "detener", "traducir","deslizar","volver","controles")) {
+            val command = JSONObject(hypothesis ?: "{}").
+            optString("text", "").lowercase()
+            if (command in listOf("iniciar", "detener","pausa","play",
+                    "traducir","deslizar","volver","controles")) {
                 onCommandDetected(command)
             }
         }

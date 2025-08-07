@@ -11,7 +11,8 @@ import java.io.File
 
 class Translator(private val context: Context) {
 
-    fun translateLastTranscription(filesDir: File, onTranslated: (String) -> Unit) {
+    fun translateLastTranscription(filesDir: File,
+                                   onTranslated: (String) -> Unit) {
         val lastFile = filesDir.listFiles()
             ?.filter { it.name.endsWith(".json") }
             ?.maxByOrNull { it.lastModified() }
@@ -29,7 +30,7 @@ class Translator(private val context: Context) {
 
             val sourceMlKitLang = when (sourceLang) {
                 "en" -> TranslateLanguage.ENGLISH
-                "ja" -> TranslateLanguage.JAPANESE
+
                 else -> TranslateLanguage.ENGLISH
             }
 

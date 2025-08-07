@@ -15,7 +15,8 @@ class Backend(private val context: Context) {
 
     suspend fun uploadAndSave(file: File, filesDir: File, onResult: (String) -> Unit) {
         try {
-            val response = URL("http://192.168.0.12:4000/whisper-transcribe/").openConnection().run {
+            val response = URL("http://192.168.0.139:4000/whisper-transcribe/")
+                .openConnection().run {
                 this as HttpURLConnection
                 requestMethod = "POST"
                 doOutput = true
@@ -33,11 +34,13 @@ class Backend(private val context: Context) {
         }
     }
 
-    private suspend fun saveTranscription(response: String, filesDir: File, onResult: (String) -> Unit) {
+    private suspend fun saveTranscription(response: String, filesDir:
+    File, onResult: (String) -> Unit) {
         withContext(Dispatchers.IO) {
             try {
                 val json = JSONObject(response)
-                val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+                val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault())
+                    .format(Date())
                 val file = File(filesDir, "transcripcion_$timestamp.json")
                 file.writeText(json.toString(4))
                 withContext(Dispatchers.Main) {

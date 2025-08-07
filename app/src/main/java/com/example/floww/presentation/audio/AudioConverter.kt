@@ -18,7 +18,8 @@ object AudioConverter {
         }
     }
 
-    private fun writeWavHeader(out: OutputStream, audioLen: Long, config: AudioConfig) {
+    private fun writeWavHeader(out: OutputStream, audioLen:
+    Long, config: AudioConfig) {
         val header = ByteArray(44)
 
         "RIFF".toByteArray().copyInto(header, 0)

@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import com.example.floww.presentation.audio.AudioConfig
 import com.example.floww.presentation.audio.AudioConverter
 import com.example.floww.presentation.audio.AudioRecorder
+import com.example.floww.presentation.audio.VoskRecognizerManager
 import com.example.floww.presentation.red.Backend
 import com.example.floww.presentation.theme.AppTheme
 import com.example.floww.presentation.translation.Translator
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onTranslate = {
                         translateLastTranscription(translatedText)
+                        showToast("Traducido")
                     },
                     onPauseTranscription = ::togglePauseRecording,
                     onStopTranscription = ::stopRecording,
@@ -89,9 +91,16 @@ class MainActivity : ComponentActivity() {
                                 showToast("Permiso de micrófono no otorgado.")
                             }
                         }
-                        "pausar" -> togglePauseRecording()
+
                         "detener" -> stopRecording()
-                        "traducir" -> translateLastTranscription(translatedText)
+                        "pausa","play" -> {
+                            showToast("...")
+                            togglePauseRecording()
+                        }
+                        "traducir" -> {
+                            showToast("Traduciendo...")
+                            translateLastTranscription(translatedText)
+                        }
                         "deslizar" -> {
                             showTextScreen.value = true
                         }
@@ -155,6 +164,7 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             translatorHelper.translateLastTranscription(filesDir) {
                 translatedText.value = it
+
             }
         }
     }
